@@ -1,0 +1,89 @@
+﻿@model Shop.Models.ViewModels.PurchaseMenuViewModel
+@{
+    ViewData["Title"] = "Cabinet";
+}
+
+<h1>History</h1>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                Id Purchase
+            </th>
+            <th>
+                Date
+            </th>
+            <th>
+                Product Name
+            </th>
+            <th>
+                Price
+            </th>
+            <th>
+                Amount
+            </th>
+            <th>
+                Sum
+            </th>
+            <th>
+                Total
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model.Purchases)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Id)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Date)
+                </td>
+            </tr>
+            @foreach (var product in item.Products)
+            {
+                <tr>
+                    <td></td>
+                    <td></td>
+                    <td>@product.Name</td>
+                    <td>@product.Price</td>
+                    <td>@product.Amount</td>
+                    <td>
+                        @{
+                            decimal sum = @product.Price * product.Amount;
+                        }
+                        @sum
+                    </td>
+
+                </tr>
+
+            }
+            <tr>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td>@item.Total</td>
+            </tr>
+        }
+    </tbody>
+</table>
+@if (Model.PageViewModel.HasPreviousPage)
+{
+    <a asp-action="History"
+       asp-route-page="@(Model.PageViewModel.PageNumber - 1)"
+       class="btn  btn-outline-dark">
+        Back
+    </a>
+}
+@if (Model.PageViewModel.HasNextPage)
+{
+    <a asp-action="History"
+       asp-route-page="@(Model.PageViewModel.PageNumber + 1)"
+       class="btn btn-outline-dark">
+        Next
+    </a>
+}
