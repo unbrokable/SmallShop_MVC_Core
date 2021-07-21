@@ -21,15 +21,13 @@ namespace Shop.Data
         public ApplicationContext(DbContextOptions<ApplicationContext> options)
            : base(options)
         {
-            //Database.EnsureCreated();
-          //  Database.Migrate();
         }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             if (!optionsBuilder.IsConfigured)
             {
-                optionsBuilder.UseSqlServer("data source=localhost;initial catalog=ShopTask1;Trusted_Connection=True;multipleactiveresultsets=True;");
+                optionsBuilder.UseSqlServer(@"data source=SYS-218\SQLEXPRESS01;initial catalog=ShopTask1;Trusted_Connection=True;multipleactiveresultsets=True;");
             }
 
         }

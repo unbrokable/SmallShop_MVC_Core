@@ -6,24 +6,34 @@ using Shop.Models;
 using System.Collections.Generic;
 using Shop.Models.ViewModels;
 using Shop.Interfaces;
+using BLL.Interfaces;
+using DAL.Interfaces;
 
 namespace Shop.Services
 {
     public class UserService:IUserService
     {
-        ApplicationContext db = new ApplicationContext();
-        public bool ChangeData(int id, string email, string password, string login)
+        private readonly IRepository repository;
+        public UserService(IRepository repository)
+        {
+            this.repository = repository;
+        }
+        public bool ChangeData( string email, string password, string login , string currentUser)
         {
             try
             {
-                var user = db.Users.First(i => i.Id == id);
+                var user = repository.Find<User>(i => i.Email.CompareTo(currentUser) == 0);
+
+                if(CheckUniqueEmail(email, user.Id) || user.Email.CompareTo(currentUser) != 0)
+                {
+                    return false;
+                }
 
                 user.Email = email ?? user.Email;
                 user.Password = password ?? user.Password;
                 user.Login = login ?? user.Login;
 
-                db.Users.Update(user);
-                db.SaveChanges();
+                repository.Update<User>(user);
             }
             catch (Exception)
             {
@@ -35,8 +45,8 @@ namespace Shop.Services
 
         public UserModel GetUser(string email)
         {
-            var user = db.Users
-                .FirstOrDefault(i => i.Email.CompareTo(email) == 0);
+            var user = repository.Find<User>(i => i.Email.CompareTo(email) == 0);
+
             return new UserModel()
             {
                 Id = user.Id,
@@ -49,18 +59,14 @@ namespace Shop.Services
         public PurchaseMenuViewModel GetPurchases(string email,int page = 1, int amountOfElementOnPage = 3)
         {
             var purchaseViewModels = new List<PurchaseViewModel>();
-            User user = db.Users.First(i => i.Email.CompareTo(email) == 0);
-            IQueryable<Purchase> purchases = db.Purchases.Where(i => i.UserId == user.Id);
-            var count = purchases.Count();
-            purchases = purchases
-                .OrderBy(i=> i.Date)
-                .Skip((page - 1) * amountOfElementOnPage)
-                .Take(amountOfElementOnPage);
+            User user =  repository.Find<User>(i => i.Email.CompareTo(email) == 0);
+            var purchases = repository.GetPage<Purchase> ((page - 1) * amountOfElementOnPage,amountOfElementOnPage ,i => i.UserId == user.Id);
+            var count = purchases?.Count() ?? 0;
+
             foreach (var purchase in purchases)
             {
-                var prod = db.CompositionPurchases
-                        .Where(i => i.PurchaseId == purchase.Id)
-                        .Join(db.Products,
+                var prod = repository.Get<CompositionPurchase>(i => i.PurchaseId == purchase.Id)
+                        .Join(repository.Get<Product>(i => true),
                             c => c.ProductId,
                             p => p.Id,
                             (c, p) => new Models.ViewModels.ProductViewModel
@@ -90,12 +96,12 @@ namespace Shop.Services
 
         public bool CheckPassword(int id, string password)
         {
-            return db.Users.FirstOrDefault(i => i.Password.CompareTo(password) == 0) == null ? false : true;
+            return  repository.IsExist<User>(i => i.Password.CompareTo(password) == 0 && i.Id == id);
         }
 
-        public bool CheckUniqueEmail(string email)
+        public bool CheckUniqueEmail(string email, int id)
         {
-            return !db.Users.Any(i => i.Email.CompareTo(email) == 0);
+            return repository.IsExist<User>(i => i.Email.CompareTo(email) == 0 && id != i.Id);
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using Shop.Data;
+﻿using DAL.Interfaces;
+using Shop.Data;
 using Shop.Data.Entities;
 using Shop.Interfaces;
 using System;
@@ -8,11 +9,16 @@ namespace Shop.Services
 {
     public class AuthorizationService:IAuthorizationServiceShop
     {
-        ApplicationContext db = new ApplicationContext();
+        private readonly IRepository repository;
+
+        public AuthorizationService( IRepository repository)
+        {
+            this.repository = repository;
+        } 
 
         public bool Login(string email, string password)
         {
-            var user = db.Users.FirstOrDefault(i => i.Email.CompareTo(email) == 0 && i.Password.CompareTo(password) == 0);
+            var user = repository.Find<User>(i => i.Email.CompareTo(email) == 0 && i.Password.CompareTo(password) == 0);
             if (user == null)
             {
                 return false;
@@ -23,13 +29,12 @@ namespace Shop.Services
         {
             try
             {
-                db.Users.Add(new User
+                repository.Add(new User
                 {
                     Email = email,
                     Password = password,
                     Login = login
                 });
-                db.SaveChanges();
             }
             catch (Exception)
             {
@@ -41,7 +46,7 @@ namespace Shop.Services
         
         public bool CheckUniqueEmail(string email)
         {
-            return !db.Users.Any(i => i.Email.CompareTo(email) == 0);
+            return !repository.IsExist<User>(i => i.Email.CompareTo(email) == 0);
         }
     }
 }

@@ -1,3 +1,6 @@
+using BLL.Interfaces;
+using DAL;
+using DAL.Interfaces;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -43,6 +46,8 @@ namespace Shop
             services.AddTransient<IAuthorizationServiceShop, AuthorizationService>();
             services.AddTransient<IPurchaseService, PurchaseService>();
             services.AddTransient<IShopService, ShopService>();
+
+            services.AddTransient<IRepository, Repository>();
             
             services.AddSession();
 
