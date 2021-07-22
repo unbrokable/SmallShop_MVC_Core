@@ -11,13 +11,17 @@ namespace Shop.Extension
     {
         public static async  Task SetObjectAsJsonAsync(this ISession session, string key, object value)
         {
-           await Task.Run(() => session.SetString(key, JsonConvert.SerializeObject(value)));
+            if (!session.IsAvailable)
+                await session.LoadAsync();
+            session.SetString(key, JsonConvert.SerializeObject(value));
         }
 
-        public static  Task<T> GetObjectFromJsonAsync<T>(this ISession session, string key)
+        public static async Task<T> GetObjectFromJsonAsync<T>(this ISession session, string key)
         {
+            if (!session.IsAvailable)
+                await session.LoadAsync();
             var value = session.GetString(key);
-            return Task.FromResult(value == null ? default : JsonConvert.DeserializeObject<T>(value));
+            return value == null ? default : JsonConvert.DeserializeObject<T>(value);
         }
     }
 }
