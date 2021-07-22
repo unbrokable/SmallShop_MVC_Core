@@ -7,7 +7,7 @@ namespace Shop.Interfaces
 {
     public interface IAuthorizationServiceShop
     {
-        bool Login(string email, string password);
-        bool Registrate(string email, string password, string login);
+        Task<bool> LoginAsync(string email, string password);
+        Task<bool> RegistrateAsync(string email, string password, string login);
     }
 }

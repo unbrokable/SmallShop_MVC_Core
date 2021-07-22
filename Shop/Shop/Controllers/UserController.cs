@@ -19,6 +19,7 @@ namespace Shop.Controllers
         public string Amount { get; set; }
     }
 
+
     public class UserController : Controller
     {
 
@@ -33,17 +34,17 @@ namespace Shop.Controllers
 
         [Authorize]
         [HttpGet]
-        public IActionResult Cabinet()
+        public async Task<IActionResult> Cabinet()
         {
-            return View(userService.GetUser(User.Identity.Name));
+            return View( await userService.GetUserAsync(User.Identity.Name));
         }
 
         [Authorize]
-        public IActionResult Cabinet(UserModel user)
+        public async Task<IActionResult> Cabinet(UserModel user)
         {
             if (ModelState.IsValid)
             {
-                if(!userService.ChangeData( user.Email, null, user.Login , User.Identity.Name))
+                if(!await userService.ChangeDataAsync(user.Email, null, user.Login , User.Identity.Name))
                 {
                     ModelState.AddModelError("", "Incorect data. Change!!!");
                 }
@@ -51,7 +52,6 @@ namespace Shop.Controllers
                 {
                     return View(user);
                 }
-                
             }
             ModelState.AddModelError("", "Incorect data");
             return View(user);
@@ -66,11 +66,11 @@ namespace Shop.Controllers
 
         [Authorize]
         [HttpPost]
-        public IActionResult ChangePassword(PasswordModel passwordModel)
+        public async Task<IActionResult> ChangePassword(PasswordModel passwordModel)
         {
             if (ModelState.IsValid)
             {
-                if(userService.ChangeData(null, passwordModel.NewPassword, null, User.Identity.Name))
+                if(await userService.ChangeDataAsync(null, passwordModel.NewPassword, null, User.Identity.Name))
                 {
                     ModelState.AddModelError("", "Incorect data. Repeat again!");
                 }
@@ -83,24 +83,24 @@ namespace Shop.Controllers
             return View(passwordModel);
         }
         [Authorize]
-        public IActionResult  History(int page = 1)
+        public async Task<IActionResult>  History(int page = 1)
         {
-            var purchases = userService.GetPurchases(User.Identity.Name,page,2); 
+            var purchases = await userService.GetPurchasesAsync(User.Identity.Name,page,2); 
             return View(purchases);
         }
 
         [HttpPost]
-        public void ChangeProduct([FromBody] Data value)
+        public async Task ChangeProduct([FromBody] Data value)
         {
-            List<ProductViewModel> cart = SessionHelper.GetObjectFromJson<List<ProductViewModel>>(HttpContext.Session, "cart") ?? new List<ProductViewModel>();
+            List<ProductViewModel> cart = await SessionHelper.GetObjectFromJsonAsync<List<ProductViewModel>>(HttpContext.Session, "cart") ?? new List<ProductViewModel>();
             var product = cart.FirstOrDefault(i => i.Id == int.Parse(value.Id));
             product.Amount = int.Parse(value.Amount);
-            SessionHelper.SetObjectAsJson(HttpContext.Session, "cart", cart);
+            await SessionHelper.SetObjectAsJsonAsync(HttpContext.Session, "cart", cart);
         }
 
-        public IActionResult AddProduct(string id)
+        public async Task<IActionResult> AddProduct(string id)
         {
-            List<ProductViewModel> cart = SessionHelper.GetObjectFromJson<List<ProductViewModel>>(HttpContext.Session, "cart")?? new List<ProductViewModel>();
+            List<ProductViewModel> cart = await SessionHelper.GetObjectFromJsonAsync<List<ProductViewModel>>(HttpContext.Session, "cart")?? new List<ProductViewModel>();
             var product = cart.FirstOrDefault(i => i.Id == int.Parse(id));
                 if (product != null)
                 {
@@ -108,25 +108,25 @@ namespace Shop.Controllers
                 }
                 else
                 {
-                    product = purchaseService.GetProductById(int.Parse(id));
+                    product = await purchaseService.GetProductByIdAsync(int.Parse(id));
                     cart.Add(product);
                 }
-            SessionHelper.SetObjectAsJson(HttpContext.Session, "cart", cart);
+            await SessionHelper.SetObjectAsJsonAsync(HttpContext.Session, "cart", cart);
             return RedirectToAction("Basket");
         }
 
-        public IActionResult RemoveProduct(string id)
+        public async Task<IActionResult> RemoveProduct(string id)
         {
-            List<ProductViewModel> cart = SessionHelper.GetObjectFromJson<List<ProductViewModel>>(HttpContext.Session, "cart")?? new List<ProductViewModel>();
+            List<ProductViewModel> cart = await SessionHelper.GetObjectFromJsonAsync<List<ProductViewModel>>(HttpContext.Session, "cart") ?? new List<ProductViewModel>();
             
             cart.Remove(cart.FirstOrDefault(i => i.Id == int.Parse(id)));
-            SessionHelper.SetObjectAsJson(HttpContext.Session, "cart", cart);
+            await SessionHelper .SetObjectAsJsonAsync(HttpContext.Session, "cart", cart);
             return RedirectToAction("Basket");
         }
 
-        public IActionResult Basket()
+        public async Task<IActionResult> Basket()
         {
-            var cart = SessionHelper.GetObjectFromJson<List<ProductViewModel>>(HttpContext.Session, "cart")?? new List<ProductViewModel>();         
+            var cart = await SessionHelper.GetObjectFromJsonAsync<List<ProductViewModel>>(HttpContext.Session, "cart")?? new List<ProductViewModel>();         
             
             ViewBag.total = cart.Sum(i => i.Price * i.Amount);
             
@@ -134,9 +134,9 @@ namespace Shop.Controllers
         }
         [Authorize]
         [HttpPost]
-        public IActionResult Buy()
+        public async Task<IActionResult> Buy()
         {
-            List<ProductViewModel> cart = SessionHelper.GetObjectFromJson<List<ProductViewModel>>(HttpContext.Session, "cart");
+            List<ProductViewModel> cart = await SessionHelper.GetObjectFromJsonAsync<List<ProductViewModel>>(HttpContext.Session, "cart");
             if(cart == null)
             {
                 return RedirectToAction("Index", "Home");
@@ -145,7 +145,7 @@ namespace Shop.Controllers
             {
                 return RedirectToAction("Login","Authorization");
             }
-            purchaseService.Buy(User.Identity.Name, cart);
+            await purchaseService.BuyAsync(User.Identity.Name, cart);
             return RedirectToAction("History");
         }
     }

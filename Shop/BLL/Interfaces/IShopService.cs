@@ -8,6 +8,6 @@ namespace Shop.Interfaces
 {
     public interface IShopService
     {
-        ProductMenuViewModel LoadProducts(int? type, string name, int page, SortState sort, int amountOfElementOnPage);
+        Task<ProductMenuViewModel> LoadProductsAsync(int? type, string name, int page, SortState sort, int amountOfElementOnPage);
     }
 }

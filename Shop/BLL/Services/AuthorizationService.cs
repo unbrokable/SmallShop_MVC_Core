@@ -4,6 +4,7 @@ using Shop.Data.Entities;
 using Shop.Interfaces;
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Shop.Services
 {
@@ -16,20 +17,20 @@ namespace Shop.Services
             this.repository = repository;
         } 
 
-        public bool Login(string email, string password)
+        public async Task<bool> LoginAsync(string email, string password)
         {
-            var user = repository.Find<User>(i => i.Email.CompareTo(email) == 0 && i.Password.CompareTo(password) == 0);
+            var user = await repository.FindAsync<User>(i => i.Email.CompareTo(email) == 0 && i.Password.CompareTo(password) == 0);
             if (user == null)
             {
                 return false;
             }
             return true;
         }
-        public bool Registrate(string email, string password, string login)
+        public async Task<bool> RegistrateAsync(string email, string password, string login)
         {
             try
             {
-                repository.Add(new User
+                await repository.AddAsync(new User
                 {
                     Email = email,
                     Password = password,
@@ -41,12 +42,11 @@ namespace Shop.Services
                 return false;
             }
             return true;
-
         }
         
-        public bool CheckUniqueEmail(string email)
+        public async Task<bool> CheckUniqueEmailAsync(string email)
         {
-            return !repository.IsExist<User>(i => i.Email.CompareTo(email) == 0);
+            return  ! (await repository.IsExistAsync<User>(i => i.Email.CompareTo(email) == 0));
         }
     }
 }

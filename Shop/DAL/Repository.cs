@@ -1,10 +1,12 @@
 ﻿using DAL.Interfaces;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Internal;
 using Shop.Data;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace DAL
 {
@@ -16,46 +18,46 @@ namespace DAL
         {
             this.bd = bd;
         }
-        public void Add<T>(params T[] data) where T : class
+        public async Task AddAsync<T>(params T[] data) where T : class
         {
             bd.Set<T>().AddRange(data);
-            bd.SaveChanges();
+            await bd.SaveChangesAsync();
         }
 
-        public T Find<T>(Func<T,bool> predicate) where T : class
+        public Task<T> FindAsync<T>(Func<T,bool> predicate) where T : class
         {
-            return bd.Set<T>().FirstOrDefault(predicate);
+            return Task.FromResult( bd.Set<T>().FirstOrDefault(predicate));
         }
 
-        public IEnumerable<T> Get<T>(Func<T, bool> predicate) where T : class
+        public Task<IEnumerable<T>> GetAsync<T>(Func<T, bool> predicate) where T : class
         {
-            return bd.Set<T>().Where(predicate).ToList();
+            return Task.FromResult( bd.Set<T>().Where(predicate).AsEnumerable());
         }
 
-        public IEnumerable<T> GetPage<T>(int skip, int page, Func<T, bool> predicate = null) where T : class
+        public Task<IEnumerable<T>> GetPageAsync<T>(int skip, int page, Func<T, bool> predicate = null) where T : class
         {
             if ( predicate == null)
             {
-                return bd.Set<T>().Skip(skip).Take(page).ToList();
+                return Task.FromResult( bd.Set<T>().Skip(skip).Take(page).AsEnumerable());
             }
-            return bd.Set<T>().Where( predicate).Skip(skip).Take(page).ToList();
+            return Task.FromResult(bd.Set<T>().Where( predicate).Skip(skip).Take(page).AsEnumerable());
         }
 
-        public bool IsExist<T>(Func<T, bool> predicate) where T : class
+        public Task<bool> IsExistAsync<T>(Func<T, bool> predicate) where T : class
         {
-            return bd.Set<T>().Any(predicate);
+            return  Task.FromResult(bd.Set<T>().Any(predicate));
         }
 
-        public void Remove<T>(T data) where T : class
+        public async Task RemoveAsync<T>(T data) where T : class
         {
             bd.Set<T>().Remove(data);
-            bd.SaveChanges();
+            await bd.SaveChangesAsync();
         }
 
-        public void Update<T>(T data) where T : class
+        public async Task UpdateAsync<T>(T data) where T : class
         {
             bd.Set<T>().Update(data);
-            bd.SaveChanges();
+            await bd.SaveChangesAsync();
         }
         
     }

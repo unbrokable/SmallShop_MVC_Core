@@ -32,7 +32,7 @@ namespace Shop.Controllers
         {
             if (ModelState.IsValid )
             {
-                if(authorizationService.Login(user.Email, user.Password))
+                if(await authorizationService.LoginAsync(user.Email, user.Password))
                 {
                     await Authenticate(user.Email);
                     return RedirectToAction("Index", "Home");
@@ -54,7 +54,7 @@ namespace Shop.Controllers
         {
             if (ModelState.IsValid)
             {
-                if (authorizationService.Registrate(user.Email, user.Password, user.Login))
+                if (await authorizationService.RegistrateAsync(user.Email, user.Password, user.Login))
                 {
                     await Authenticate(user.Email); 
                     return RedirectToAction("Index", "Home");             
