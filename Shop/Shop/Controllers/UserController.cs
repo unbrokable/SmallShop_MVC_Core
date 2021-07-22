@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using BLL.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Shop.Extension;
 using Shop.Interfaces;
@@ -40,10 +41,17 @@ namespace Shop.Controllers
         [Authorize]
         public IActionResult Cabinet(UserModel user)
         {
-            if (ModelState.IsValid &&( userService.CheckUniqueEmail(user.Email) || user.Email.CompareTo(User.Identity.Name) == 0))
+            if (ModelState.IsValid)
             {
-                userService.ChangeData(user.Id, user.Email, null, user.Login);
-                return View(user);
+                if(!userService.ChangeData( user.Email, null, user.Login , User.Identity.Name))
+                {
+                    ModelState.AddModelError("", "Incorect data. Change!!!");
+                }
+                else
+                {
+                    return View(user);
+                }
+                
             }
             ModelState.AddModelError("", "Incorect data");
             return View(user);
@@ -55,15 +63,21 @@ namespace Shop.Controllers
         {
             return View();
         }
+
         [Authorize]
         [HttpPost]
         public IActionResult ChangePassword(PasswordModel passwordModel)
         {
-            var user = userService.GetUser(User.Identity.Name);
-            if (ModelState.IsValid && userService.CheckPassword(user.Id,passwordModel.Password))
+            if (ModelState.IsValid)
             {
-               userService.ChangeData(user.Id, null, passwordModel.NewPassword, null);
-                return RedirectToAction("Cabinet");
+                if(userService.ChangeData(null, passwordModel.NewPassword, null, User.Identity.Name))
+                {
+                    ModelState.AddModelError("", "Incorect data. Repeat again!");
+                }
+                else
+                {
+                    return RedirectToAction("Cabinet");
+                } 
             }
             ModelState.AddModelError("", "Incorect data");
             return View(passwordModel);

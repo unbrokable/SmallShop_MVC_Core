@@ -1,24 +1,25 @@
-﻿using Microsoft.AspNetCore.Http;
-using Newtonsoft.Json;
+﻿using DAL.Interfaces;
 using Shop.Data;
 using Shop.Data.Entities;
 using Shop.Interfaces;
-using Shop.Models;
 using Shop.Models.ViewModels;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace Shop.Services
 {
     public class PurchaseService: IPurchaseService
     {
-        ApplicationContext db = new ApplicationContext();
+        private readonly IRepository repository;
+        public PurchaseService(IRepository repository)
+        {
+            this.repository = repository;
+        }
 
         public bool Buy(string email, List<ProductViewModel> products)
         {
-            var user = db.Users.FirstOrDefault(i => i.Email.CompareTo(email) == 0);
+            var user = repository.Find<User>(i => i.Email.CompareTo(email) == 0);
 
             var purchase = new Purchase()
             {
@@ -26,11 +27,12 @@ namespace Shop.Services
                 Date = DateTime.Now
 
             };
-            db.Purchases.Add(purchase);
-            var product = db.Products.Where(i => products.Select(j => j.Id).Contains(i.Id)).ToList();
+            repository.Add<Purchase>(purchase);
+            var product = repository.Get<Product>(i => products.Select(j => j.Id).Contains(i.Id)).ToList();
+            List<CompositionPurchase> compositionPurchases = new List<CompositionPurchase>(product.Count);
             for(int i =0; i < product.Count; i++)
             {
-                db.CompositionPurchases.Add(new CompositionPurchase()
+                compositionPurchases.Add(new CompositionPurchase()
                 {
                     Purchase = purchase,
                     Product = product[i],
@@ -40,7 +42,7 @@ namespace Shop.Services
             }
             try
             {
-                db.SaveChanges();
+                repository.Add<CompositionPurchase>(compositionPurchases.ToArray());
             }
             catch (Exception)
             {
@@ -52,7 +54,7 @@ namespace Shop.Services
 
         public ProductViewModel GetProductById(int id)
         {
-            var product = db.Products.FirstOrDefault(i => i.Id == id);
+            var product = repository.Find<Product>(i => i.Id == id);
 
             return new ProductViewModel()
             {

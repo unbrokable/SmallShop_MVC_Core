@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authentication;
+﻿using BLL.Interfaces;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
 using Shop.Interfaces;
@@ -51,7 +52,7 @@ namespace Shop.Controllers
         [HttpPost]
         public async Task<IActionResult> Registration(RegistrationModel user)
         {
-            if (ModelState.IsValid && userService.CheckUniqueEmail(user.Email) )
+            if (ModelState.IsValid)
             {
                 if (authorizationService.Registrate(user.Email, user.Password, user.Login))
                 {

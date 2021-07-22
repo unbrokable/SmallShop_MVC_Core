@@ -1,4 +1,5 @@
-﻿using Shop.Data;
+﻿using DAL.Interfaces;
+using Shop.Data;
 using Shop.Data.Entities;
 using Shop.Interfaces;
 using Shop.Models.ViewModels;
@@ -11,11 +12,15 @@ namespace Shop.Services
 {
     public class ShopService:IShopService
     {
-        ApplicationContext bd = new ApplicationContext();
+        private readonly IRepository repository;
+        public ShopService(IRepository repository)
+        {
+            this.repository = repository;
+        }
 
         public ProductMenuViewModel LoadProducts(int? type, string name, int page = 1, SortState sort = SortState.PriceAsc, int amountOfElementOnPage = 3)
         {
-            IQueryable<Product> products = bd.Products;
+            var products = repository.Get<Product>(i => true);
             if (type != null)
             {
                 TypeProduct typeProduct = (TypeProduct)Enum.ToObject(typeof(TypeProduct), type);
