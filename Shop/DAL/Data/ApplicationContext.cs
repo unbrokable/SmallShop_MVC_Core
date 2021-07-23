@@ -17,19 +17,9 @@ namespace Shop.Data
         public ApplicationContext()
         {
         }
-
         public ApplicationContext(DbContextOptions<ApplicationContext> options)
            : base(options)
         {
-        }
-
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        {
-            if (!optionsBuilder.IsConfigured)
-            {
-                optionsBuilder.UseSqlServer(@"data source=SYS-218\SQLEXPRESS01;initial catalog=ShopTask1;Trusted_Connection=True;multipleactiveresultsets=True;");
-            }
-
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
