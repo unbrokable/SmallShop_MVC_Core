@@ -3,6 +3,7 @@ using Shop.Interfaces;
 using Shop.Models;
 using Shop.Models.ViewModels;
 using System.Diagnostics;
+using System.Threading.Tasks;
 
 namespace Shop.Controllers
 {
@@ -14,9 +15,9 @@ namespace Shop.Controllers
             this.service = service;
         }
 
-        public IActionResult Index(int? type, string name, int page = 1, SortState sort = SortState.PriceAsc)
+        public async Task<IActionResult> Index(int? type, string name, int page = 1, SortState sort = SortState.PriceAsc)
         {
-            var viewModel = service.LoadProducts(type,name,page ,sort, 3);
+            var viewModel = await service.LoadProductsAsync(type,name,page ,sort, 3);
             return View(viewModel);
         }
 

@@ -8,7 +8,7 @@ namespace Shop.Interfaces
 {
     public interface IPurchaseService
     {
-        public bool Buy(string email, List<ProductViewModel> products);
-        public ProductViewModel GetProductById(int id);
+        public Task<bool> BuyAsync(string email, List<ProductViewModel> products);
+        public Task<ProductViewModel> GetProductByIdAsync(int id);
     }
 }

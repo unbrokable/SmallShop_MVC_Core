@@ -6,6 +6,7 @@ using Shop.Models.ViewModels;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Shop.Services
 {
@@ -17,9 +18,9 @@ namespace Shop.Services
             this.repository = repository;
         }
 
-        public bool Buy(string email, List<ProductViewModel> products)
+        public async Task<bool> BuyAsync(string email, List<ProductViewModel> products)
         {
-            var user = repository.Find<User>(i => i.Email.CompareTo(email) == 0);
+            var user = await repository.FindAsync<User>(i => i.Email.CompareTo(email) == 0);
 
             var purchase = new Purchase()
             {
@@ -27,8 +28,8 @@ namespace Shop.Services
                 Date = DateTime.Now
 
             };
-            repository.Add<Purchase>(purchase);
-            var product = repository.Get<Product>(i => products.Select(j => j.Id).Contains(i.Id)).ToList();
+            await repository.AddAsync<Purchase>(purchase);
+            var product = (await repository.GetAsync<Product>(i => products.Select(j => j.Id).Contains(i.Id))).ToList();
             List<CompositionPurchase> compositionPurchases = new List<CompositionPurchase>(product.Count);
             for(int i =0; i < product.Count; i++)
             {
@@ -42,7 +43,7 @@ namespace Shop.Services
             }
             try
             {
-                repository.Add<CompositionPurchase>(compositionPurchases.ToArray());
+                await repository.AddAsync<CompositionPurchase>(compositionPurchases.ToArray());
             }
             catch (Exception)
             {
@@ -52,9 +53,9 @@ namespace Shop.Services
             return true;
         }
 
-        public ProductViewModel GetProductById(int id)
+        public async Task<ProductViewModel> GetProductByIdAsync(int id)
         {
-            var product = repository.Find<Product>(i => i.Id == id);
+            var product = await repository.FindAsync<Product>(i => i.Id == id);
 
             return new ProductViewModel()
             {

@@ -8,6 +8,7 @@ using Shop.Models.ViewModels;
 using Shop.Interfaces;
 using BLL.Interfaces;
 using DAL.Interfaces;
+using System.Threading.Tasks;
 
 namespace Shop.Services
 {
@@ -18,13 +19,13 @@ namespace Shop.Services
         {
             this.repository = repository;
         }
-        public bool ChangeData( string email, string password, string login , string currentUser)
+        public async Task<bool> ChangeDataAsync( string email, string password, string login , string currentUser)
         {
             try
             {
-                var user = repository.Find<User>(i => i.Email.CompareTo(currentUser) == 0);
+                var user = await repository.FindAsync<User>(i => i.Email.CompareTo(currentUser) == 0);
 
-                if(CheckUniqueEmail(email, user.Id) || user.Email.CompareTo(currentUser) != 0)
+                if(await CheckUniqueEmailAsync(email, user.Id) || user.Email.CompareTo(currentUser) != 0)
                 {
                     return false;
                 }
@@ -33,19 +34,18 @@ namespace Shop.Services
                 user.Password = password ?? user.Password;
                 user.Login = login ?? user.Login;
 
-                repository.Update<User>(user);
+                await repository.UpdateAsync<User>(user);
             }
             catch (Exception)
             {
-
                 return false;
             }
             return true;
         }
 
-        public UserModel GetUser(string email)
+        public async Task<UserModel> GetUserAsync(string email)
         {
-            var user = repository.Find<User>(i => i.Email.CompareTo(email) == 0);
+            var user = await repository.FindAsync<User>(i => i.Email.CompareTo(email) == 0);
 
             return new UserModel()
             {
@@ -56,17 +56,17 @@ namespace Shop.Services
                 
         }
 
-        public PurchaseMenuViewModel GetPurchases(string email,int page = 1, int amountOfElementOnPage = 3)
+        public async Task<PurchaseMenuViewModel> GetPurchasesAsync(string email,int page = 1, int amountOfElementOnPage = 3)
         {
             var purchaseViewModels = new List<PurchaseViewModel>();
-            User user =  repository.Find<User>(i => i.Email.CompareTo(email) == 0);
-            var purchases = repository.GetPage<Purchase> ((page - 1) * amountOfElementOnPage,amountOfElementOnPage ,i => i.UserId == user.Id);
+            User user = await repository.FindAsync<User>(i => i.Email.CompareTo(email) == 0);
+            var purchases = await repository.GetPageAsync<Purchase> ((page - 1) * amountOfElementOnPage,amountOfElementOnPage ,i => i.UserId == user.Id);
             var count = purchases?.Count() ?? 0;
 
             foreach (var purchase in purchases)
             {
-                var prod = repository.Get<CompositionPurchase>(i => i.PurchaseId == purchase.Id)
-                        .Join(repository.Get<Product>(i => true),
+                var prod = (await repository.GetAsync<CompositionPurchase>(i => i.PurchaseId == purchase.Id))
+                        .Join( await repository.GetAsync<Product>(i => true),
                             c => c.ProductId,
                             p => p.Id,
                             (c, p) => new Models.ViewModels.ProductViewModel
@@ -94,14 +94,14 @@ namespace Shop.Services
             }; 
         }
 
-        public bool CheckPassword(int id, string password)
+        public async Task<bool> CheckPasswordAsync(int id, string password)
         {
-            return  repository.IsExist<User>(i => i.Password.CompareTo(password) == 0 && i.Id == id);
+            return await repository.IsExistAsync<User>(i => i.Password.CompareTo(password) == 0 && i.Id == id);
         }
 
-        public bool CheckUniqueEmail(string email, int id)
+        public async Task<bool> CheckUniqueEmailAsync(string email, int id)
         {
-            return repository.IsExist<User>(i => i.Email.CompareTo(email) == 0 && id != i.Id);
+            return await repository.IsExistAsync<User>(i => i.Email.CompareTo(email) == 0 && id != i.Id);
         }
     }
 }

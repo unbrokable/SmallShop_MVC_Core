@@ -18,9 +18,9 @@ namespace Shop.Services
             this.repository = repository;
         }
 
-        public ProductMenuViewModel LoadProducts(int? type, string name, int page = 1, SortState sort = SortState.PriceAsc, int amountOfElementOnPage = 3)
+        public async Task<ProductMenuViewModel> LoadProductsAsync(int? type, string name, int page = 1, SortState sort = SortState.PriceAsc, int amountOfElementOnPage = 3)
         {
-            var products = repository.Get<Product>(i => true);
+            var products =await repository.GetAsync<Product>(i => true);
             if (type != null)
             {
                 TypeProduct typeProduct = (TypeProduct)Enum.ToObject(typeof(TypeProduct), type);

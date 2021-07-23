@@ -9,12 +9,12 @@ namespace BLL.Interfaces
 {
     public interface IUserService
     {
-        bool ChangeData(string email, string password, string login, string currentUser);
+        Task<bool> ChangeDataAsync(string email, string password, string login, string currentUser);
 
-        UserModel GetUser(string email);
-        PurchaseMenuViewModel GetPurchases(string email, int page, int amountOfElementOnPage);
-        bool CheckPassword(int id, string password);
-        public bool CheckUniqueEmail(string email, int id);
+        Task<UserModel> GetUserAsync(string email);
+        Task<PurchaseMenuViewModel> GetPurchasesAsync(string email, int page, int amountOfElementOnPage);
+        Task<bool> CheckPasswordAsync(int id, string password);
+        Task<bool> CheckUniqueEmailAsync(string email, int id);
        
     }
 }

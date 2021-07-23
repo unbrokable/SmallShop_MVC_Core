@@ -1,17 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq.Expressions;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace DAL.Interfaces
 {
     public interface IRepository
     {
-        public void Add<T>(params T[] data) where T: class;
-        public void Remove<T>(T data) where T: class;
-        public void Update<T>(T data) where T:class;
-        public T Find<T>(Func<T, bool> predicate) where T : class;
-        public IEnumerable<T> Get<T>(Func<T, bool> predicate) where T : class;
-        public IEnumerable<T> GetPage<T>( int amount, int page, Func<T, bool> predicate) where T : class;
-        public bool IsExist<T>(Func<T, bool> predicate) where T : class; 
+        public Task AddAsync<T>(params T[] data) where T: class;
+        public Task RemoveAsync<T>(T data) where T: class;
+        public Task UpdateAsync<T>(T data) where T:class;
+        public Task<T> FindAsync<T>(Expression<Func<T, bool>> predicate) where T : class;
+        public Task<IEnumerable<T>> GetAsync<T>(Expression<Func<T, bool>> predicate) where T : class;
+        public Task<IEnumerable<T>> GetPageAsync<T>( int amount, int page, Expression<Func<T, bool>> predicate) where T : class;
+        public Task<bool> IsExistAsync<T>(Expression<Func<T, bool>> predicate) where T : class; 
     }
 }
